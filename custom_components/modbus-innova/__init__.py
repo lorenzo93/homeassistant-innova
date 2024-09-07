@@ -1,1 +1,1 @@
-"""The modbus-fancoil component."""
+"""The modbus-innova component."""

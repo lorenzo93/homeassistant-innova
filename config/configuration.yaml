@@ -26,7 +26,7 @@ modbus:
         data_type: uint16
 
 climate:
-  - platform: modbus-fancoil
+  - platform: modbus-innova
     name: Studio Fancoil
     slave: 19
     max_temp: 40
