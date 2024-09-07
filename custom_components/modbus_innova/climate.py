@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.climate import (
     PLATFORM_SCHEMA as CLIMATE_PLATFORM_SCHEMA,
+)
+from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     HVACMode,
@@ -19,6 +21,7 @@ from homeassistant.components.modbus import (
     ModbusHub,
     get_hub,
 )
+from homeassistant.components.modbus.const import CONF_MAX_TEMP, CONF_MIN_TEMP
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_NAME,
@@ -26,10 +29,11 @@ from homeassistant.const import (
     DEVICE_DEFAULT_NAME,
     UnitOfTemperature,
 )
-from homeassistant.components.modbus.const import CONF_MAX_TEMP, CONF_MIN_TEMP
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+    from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 CALL_TYPE_WRITE_REGISTER = "write_register"
 CONF_HUB = "hub"
@@ -51,20 +55,22 @@ async def async_setup_platform(
     hass: HomeAssistant,
     config: ConfigType,
     async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
+    discovery_info: DiscoveryInfoType | None = None,  # noqa: ARG001
 ) -> None:
     """Set up the Flexit Platform."""
     modbus_slave = config.get(CONF_SLAVE)
     name = config.get(CONF_NAME)
     hub = get_hub(hass, config[CONF_HUB])
-    async_add_entities([InnovaFancoil(hub, modbus_slave, name, config)], True)
+    async_add_entities(
+        [InnovaFancoil(hub, modbus_slave, name, config)], update_before_add=True
+    )
 
 
 class InnovaFancoil(ClimateEntity):
     """Representation of a fancoil AC unit."""
 
-    _attr_fan_modes = ["Auto", "Silent", "Night", "High"]
-    _attr_hvac_modes = [HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]
+    _attr_fan_modes: ClassVar[list[str]] = ["Auto", "Silent", "Night", "High"]
+    _attr_hvac_modes: ClassVar[list[str]] = [HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.FAN_MODE
@@ -106,9 +112,13 @@ class InnovaFancoil(ClimateEntity):
             CALL_TYPE_REGISTER_HOLDING, 15
         )
 
-        self._water_temperature = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 1)
+        self._water_temperature = await self._async_read_int16_from_register(
+            CALL_TYPE_REGISTER_HOLDING, 1
+        )
 
-        prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
+        prg = await self._async_read_int16_from_register(
+            CALL_TYPE_REGISTER_HOLDING, 201
+        )
 
         if (
             not InnovaFancoil._is_set(prg, 0)
@@ -138,9 +148,11 @@ class InnovaFancoil(ClimateEntity):
             _LOGGER.error("Received invalid PRG")
             return
 
-        season = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 233)
+        season = await self._async_read_int16_from_register(
+            CALL_TYPE_REGISTER_HOLDING, 233
+        )
 
-        if season == 5:
+        if season == 5:  # noqa: PLR2004
             self._attr_hvac_mode = HVACMode.COOL
         elif season in (3, 0):
             self._attr_hvac_mode = HVACMode.HEAT
@@ -161,7 +173,9 @@ class InnovaFancoil(ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new HVAC Mode."""
-        curr_prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
+        curr_prg = await self._async_read_int16_from_register(
+            CALL_TYPE_REGISTER_HOLDING, 201
+        )
         if hvac_mode == HVACMode.OFF:
             await self._async_write_int16_to_register(201, (curr_prg | (1 << 7)))
             return
@@ -191,13 +205,15 @@ class InnovaFancoil(ClimateEntity):
         """Set new fan mode."""
         index = self._attr_fan_modes.index(fan_mode)
 
-        curr_prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
+        curr_prg = await self._async_read_int16_from_register(
+            CALL_TYPE_REGISTER_HOLDING, 201
+        )
 
         if index == 0:
             curr_prg = curr_prg & ~0b111
         elif index == 1:
             curr_prg = curr_prg & ~0b111 | 0b001
-        elif index == 2:
+        elif index == 2:  # noqa: PLR2004
             curr_prg = curr_prg & ~0b111 | 0b010
         else:
             curr_prg = curr_prg & ~0b111 | 0b011
@@ -208,7 +224,9 @@ class InnovaFancoil(ClimateEntity):
             _LOGGER.error("Modbus error setting fan mode")
 
     # Based on _async_read_register in ModbusThermostat class
-    async def _async_read_int16_from_register(self, register_type: str, register: int) -> int:
+    async def _async_read_int16_from_register(
+        self, register_type: str, register: int
+    ) -> int:
         """Read register using the Modbus hub slave."""
         result = await self._hub.async_pb_call(self._slave, register, 1, register_type)
         if result is None:
@@ -217,14 +235,20 @@ class InnovaFancoil(ClimateEntity):
 
         return int(result.registers[0])
 
-    async def _async_read_temp_from_register(self, register_type: str, register: int) -> float:
-        result = float(await self._async_read_int16_from_register(register_type, register))
+    async def _async_read_temp_from_register(
+        self, register_type: str, register: int
+    ) -> float:
+        result = float(
+            await self._async_read_int16_from_register(register_type, register)
+        )
         if not result:
             return -1
         return result / 10.0
 
     async def _async_write_int16_to_register(self, register: int, value: int) -> bool:
-        return await self._hub.async_pb_call(self._slave, register, value, CALL_TYPE_WRITE_REGISTER)
+        return await self._hub.async_pb_call(
+            self._slave, register, value, CALL_TYPE_WRITE_REGISTER
+        )
 
     @staticmethod
     def _is_set(x: int, n: int) -> bool:
