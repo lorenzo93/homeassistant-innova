@@ -57,10 +57,10 @@ async def async_setup_platform(
     modbus_slave = config.get(CONF_SLAVE)
     name = config.get(CONF_NAME)
     hub = get_hub(hass, config[CONF_HUB])
-    async_add_entities([Fancoil(hub, modbus_slave, name, config)], True)
+    async_add_entities([InnovaFancoil(hub, modbus_slave, name, config)], True)
 
 
-class Fancoil(ClimateEntity):
+class InnovaFancoil(ClimateEntity):
     """Representation of a fancoil AC unit."""
 
     _attr_fan_modes = ["Auto", "Silent", "Night", "High"]
@@ -106,45 +106,39 @@ class Fancoil(ClimateEntity):
             CALL_TYPE_REGISTER_HOLDING, 15
         )
 
-        self._water_temperature = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 1
-        )
+        self._water_temperature = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 1)
 
-        prg = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 201
-        )
+        prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
 
         if (
-            not Fancoil._is_set(prg, 0)
-            and not Fancoil._is_set(prg, 1)
-            and not Fancoil._is_set(prg, 2)
+            not InnovaFancoil._is_set(prg, 0)
+            and not InnovaFancoil._is_set(prg, 1)
+            and not InnovaFancoil._is_set(prg, 2)
         ):
             self._attr_fan_mode = self._attr_fan_modes[0]
         elif (
-            Fancoil._is_set(prg, 0)
-            and not Fancoil._is_set(prg, 1)
-            and not Fancoil._is_set(prg, 2)
+            InnovaFancoil._is_set(prg, 0)
+            and not InnovaFancoil._is_set(prg, 1)
+            and not InnovaFancoil._is_set(prg, 2)
         ):
             self._attr_fan_mode = self._attr_fan_modes[1]
         elif (
-            not Fancoil._is_set(prg, 0)
-            and Fancoil._is_set(prg, 1)
-            and not Fancoil._is_set(prg, 2)
+            not InnovaFancoil._is_set(prg, 0)
+            and InnovaFancoil._is_set(prg, 1)
+            and not InnovaFancoil._is_set(prg, 2)
         ):
             self._attr_fan_mode = self._attr_fan_modes[2]
         elif (
-            Fancoil._is_set(prg, 0)
-            and Fancoil._is_set(prg, 1)
-            and not Fancoil._is_set(prg, 2)
+            InnovaFancoil._is_set(prg, 0)
+            and InnovaFancoil._is_set(prg, 1)
+            and not InnovaFancoil._is_set(prg, 2)
         ):
             self._attr_fan_mode = self._attr_fan_modes[3]
         else:
             _LOGGER.error("Received invalid PRG")
             return
 
-        season = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 233
-        )
+        season = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 233)
 
         if season == 5:
             self._attr_hvac_mode = HVACMode.COOL
@@ -154,7 +148,7 @@ class Fancoil(ClimateEntity):
             _LOGGER.error("Received invalid season value: %s", season)
             return
 
-        if Fancoil._is_set(prg, 7):
+        if InnovaFancoil._is_set(prg, 7):
             self._attr_hvac_mode = HVACMode.OFF
 
     @property
@@ -167,9 +161,7 @@ class Fancoil(ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new HVAC Mode."""
-        curr_prg = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 201
-        )
+        curr_prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
         if hvac_mode == HVACMode.OFF:
             await self._async_write_int16_to_register(201, (curr_prg | (1 << 7)))
             return
@@ -199,9 +191,7 @@ class Fancoil(ClimateEntity):
         """Set new fan mode."""
         index = self._attr_fan_modes.index(fan_mode)
 
-        curr_prg = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 201
-        )
+        curr_prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
 
         if index == 0:
             curr_prg = curr_prg & ~0b111
@@ -218,9 +208,7 @@ class Fancoil(ClimateEntity):
             _LOGGER.error("Modbus error setting fan mode")
 
     # Based on _async_read_register in ModbusThermostat class
-    async def _async_read_int16_from_register(
-        self, register_type: str, register: int
-    ) -> int:
+    async def _async_read_int16_from_register(self, register_type: str, register: int) -> int:
         """Read register using the Modbus hub slave."""
         result = await self._hub.async_pb_call(self._slave, register, 1, register_type)
         if result is None:
@@ -229,20 +217,14 @@ class Fancoil(ClimateEntity):
 
         return int(result.registers[0])
 
-    async def _async_read_temp_from_register(
-        self, register_type: str, register: int
-    ) -> float:
-        result = float(
-            await self._async_read_int16_from_register(register_type, register)
-        )
+    async def _async_read_temp_from_register(self, register_type: str, register: int) -> float:
+        result = float(await self._async_read_int16_from_register(register_type, register))
         if not result:
             return -1
         return result / 10.0
 
     async def _async_write_int16_to_register(self, register: int, value: int) -> bool:
-        return await self._hub.async_pb_call(
-            self._slave, register, value, CALL_TYPE_WRITE_REGISTER
-        )
+        return await self._hub.async_pb_call(self._slave, register, value, CALL_TYPE_WRITE_REGISTER)
 
     @staticmethod
     def _is_set(x: int, n: int) -> bool:

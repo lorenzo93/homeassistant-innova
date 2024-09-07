@@ -1,0 +1,11 @@
+{
+	"domain": "modbus-innova",
+	"name": "Modbus Innova",
+	"codeowners": [],
+	"dependencies": [
+		"modbus"
+	],
+	"documentation": "https://github.com/lorenzo93/homeassistant-innova",
+	"iot_class": "local_polling",
+	"version": "1.0.0"
+}
