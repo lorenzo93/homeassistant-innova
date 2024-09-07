@@ -5,19 +5,17 @@ Beware that Innova sells its fancoils to other brands, the integration should st
 
 Modbus official documentation available [here](https://www.innovaenergie.com/site/assets/files/2792/n273025c_kit_bridge_modbus_rtu_rev_01_en.pdf).
 
-[![GitHub Release][releases-shield]][releases]
-[![GitHub Activity][commits-shield]][commits]
-[![License][license-shield]](LICENSE)
+*Rule of thumb*: if the keybord (touchscreen display) is VERY similar to the one in the official documentation, probably the integration should work.
 
 ## Installation
 
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
 1. If you do not have a `custom_components` directory (folder) there, you need to create it.
 1. In the `custom_components` directory (folder) create a new folder called `integration_blueprint`.
-1. Download _all_ the files from the `custom_components/integration_blueprint/` directory (folder) in this repository.
+1. Download _all_ the files from the `custom_components/modbus-innova/` directory (folder) in this repository.
 1. Place the files you downloaded in the new directory (folder) you created.
 1. Restart Home Assistant
-1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Integration blueprint"
+1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Modbus Innova"
 
 ## Configuration is done in the configuration.yaml file
 
