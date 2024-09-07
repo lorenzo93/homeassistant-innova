@@ -1,0 +1,11 @@
+{
+	"domain": "modbus-fancoil",
+	"name": "Modbus Fancoil",
+	"codeowners": [],
+	"dependencies": [
+		"modbus"
+	],
+	"documentation": "https://github.com/lorenzo93/homeassistant-fancoil",
+	"iot_class": "local_polling",
+	"version": "1.0.0"
+}

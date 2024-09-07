@@ -10,3 +10,22 @@ logger:
   default: info
   logs:
     custom_components.integration_blueprint: debug
+
+modbus:
+  - name: modbus_hub
+    type: tcp
+    host: 10.0.20.14
+    port: 4196
+    sensors:
+      - name: Letto_Temp
+        slave: 20
+        address: 0
+        input_type: holding
+        unit_of_measurement: °C
+        scale: 0.1
+        data_type: uint16
+
+climate:
+  - platform: modbus-fancoil
+    name: Studio Fancoil
+    slave: 19

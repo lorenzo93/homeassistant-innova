@@ -1,0 +1,1 @@
+"""The modbus-fancoil component."""
