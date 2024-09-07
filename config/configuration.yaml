@@ -29,3 +29,5 @@ climate:
   - platform: modbus-fancoil
     name: Studio Fancoil
     slave: 19
+    max_temp: 40
+    min_temp: 5

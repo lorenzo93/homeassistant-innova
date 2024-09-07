@@ -26,6 +26,7 @@ from homeassistant.const import (
     DEVICE_DEFAULT_NAME,
     UnitOfTemperature,
 )
+from homeassistant.components.modbus.const import CONF_MAX_TEMP, CONF_MIN_TEMP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -38,6 +39,8 @@ PLATFORM_SCHEMA = CLIMATE_PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_HUB, default=DEFAULT_HUB): cv.string,
         vol.Required(CONF_SLAVE): vol.All(int, vol.Range(min=0, max=254)),
         vol.Optional(CONF_NAME, default=DEVICE_DEFAULT_NAME): cv.string,
+        vol.Optional(CONF_MIN_TEMP, default=5): vol.All(int, vol.Range(min=5, max=40)),
+        vol.Optional(CONF_MAX_TEMP, default=40): vol.All(int, vol.Range(min=5, max=40)),
     }
 )
 
@@ -54,7 +57,7 @@ async def async_setup_platform(
     modbus_slave = config.get(CONF_SLAVE)
     name = config.get(CONF_NAME)
     hub = get_hub(hass, config[CONF_HUB])
-    async_add_entities([Fancoil(hub, modbus_slave, name)], True)
+    async_add_entities([Fancoil(hub, modbus_slave, name, config)], True)
 
 
 class Fancoil(ClimateEntity):
@@ -72,7 +75,11 @@ class Fancoil(ClimateEntity):
     _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(
-        self, hub: ModbusHub, modbus_slave: int | None, name: str | None
+        self,
+        hub: ModbusHub,
+        modbus_slave: int | None,
+        name: str | None,
+        config: dict[str, Any],
     ) -> None:
         """Initialize the unit."""
         self._hub = hub
@@ -82,6 +89,9 @@ class Fancoil(ClimateEntity):
         self._alarm = False
         self._water_temperature: int | None = None
         self._attr_actual_air_speed: int | None = None
+
+        self._attr_min_temp = config[CONF_MIN_TEMP]
+        self._attr_max_temp = config[CONF_MAX_TEMP]
 
     async def async_update(self) -> None:
         """Update unit attributes."""
