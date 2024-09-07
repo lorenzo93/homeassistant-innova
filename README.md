@@ -22,9 +22,9 @@ Modbus official documentation available [here](https://www.innovaenergie.com/sit
 ## Configuration is done in the configuration.yaml file
 
 1. Configure the modbus integration with the correct data.
-1. Add a climate device. In the configuration are shown all the possible parameters
+1. Add a climate device. In the configuration are shown all the possible parameters, but just `platform`, `name` and `slave` are compulsory
 
-```jaml
+```yaml
 modbus:
   - name: modbus_hub
     type: tcp
