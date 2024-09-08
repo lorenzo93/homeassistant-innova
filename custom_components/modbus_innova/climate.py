@@ -57,13 +57,11 @@ async def async_setup_platform(
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,  # noqa: ARG001
 ) -> None:
-    """Set up the Flexit Platform."""
+    """Set up the Modbus Innova Platform."""
     modbus_slave = config.get(CONF_SLAVE)
     name = config.get(CONF_NAME)
     hub = get_hub(hass, config[CONF_HUB])
-    async_add_entities(
-        [InnovaFancoil(hub, modbus_slave, name, config)], update_before_add=True
-    )
+    async_add_entities([InnovaFancoil(hub, modbus_slave, name, config)], update_before_add=True)
 
 
 class InnovaFancoil(ClimateEntity):
@@ -112,13 +110,9 @@ class InnovaFancoil(ClimateEntity):
             CALL_TYPE_REGISTER_HOLDING, 15
         )
 
-        self._water_temperature = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 1
-        )
+        self._water_temperature = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 1)
 
-        prg = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 201
-        )
+        prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
 
         if (
             not InnovaFancoil._is_set(prg, 0)
@@ -148,9 +142,7 @@ class InnovaFancoil(ClimateEntity):
             _LOGGER.error("Received invalid PRG")
             return
 
-        season = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 233
-        )
+        season = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 233)
 
         if season == 5:  # noqa: PLR2004
             self._attr_hvac_mode = HVACMode.COOL
@@ -173,9 +165,7 @@ class InnovaFancoil(ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new HVAC Mode."""
-        curr_prg = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 201
-        )
+        curr_prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
         if hvac_mode == HVACMode.OFF:
             await self._async_write_int16_to_register(201, (curr_prg | (1 << 7)))
             return
@@ -199,15 +189,13 @@ class InnovaFancoil(ClimateEntity):
         if await self._async_write_int16_to_register(231, int(target_temperature * 10)):
             self._attr_target_temperature = target_temperature
         else:
-            _LOGGER.error("Modbus error setting target temperature to Flexit")
+            _LOGGER.error("Modbus error setting target temperature to fancoil")
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         """Set new fan mode."""
         index = self._attr_fan_modes.index(fan_mode)
 
-        curr_prg = await self._async_read_int16_from_register(
-            CALL_TYPE_REGISTER_HOLDING, 201
-        )
+        curr_prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
 
         if index == 0:
             curr_prg = curr_prg & ~0b111
@@ -224,31 +212,23 @@ class InnovaFancoil(ClimateEntity):
             _LOGGER.error("Modbus error setting fan mode")
 
     # Based on _async_read_register in ModbusThermostat class
-    async def _async_read_int16_from_register(
-        self, register_type: str, register: int
-    ) -> int:
+    async def _async_read_int16_from_register(self, register_type: str, register: int) -> int:
         """Read register using the Modbus hub slave."""
         result = await self._hub.async_pb_call(self._slave, register, 1, register_type)
         if result is None:
-            _LOGGER.error("Error reading value from Flexit modbus adapter")
+            _LOGGER.error("Error reading value from fancoil")
             return -1
 
         return int(result.registers[0])
 
-    async def _async_read_temp_from_register(
-        self, register_type: str, register: int
-    ) -> float:
-        result = float(
-            await self._async_read_int16_from_register(register_type, register)
-        )
+    async def _async_read_temp_from_register(self, register_type: str, register: int) -> float:
+        result = float(await self._async_read_int16_from_register(register_type, register))
         if not result:
             return -1
         return result / 10.0
 
     async def _async_write_int16_to_register(self, register: int, value: int) -> bool:
-        return await self._hub.async_pb_call(
-            self._slave, register, value, CALL_TYPE_WRITE_REGISTER
-        )
+        return await self._hub.async_pb_call(self._slave, register, value, CALL_TYPE_WRITE_REGISTER)
 
     @staticmethod
     def _is_set(x: int, n: int) -> bool:
