@@ -10,18 +10,21 @@ import voluptuous as vol
 from homeassistant.components.climate import (
     PLATFORM_SCHEMA as CLIMATE_PLATFORM_SCHEMA,
 )
-from homeassistant.components.climate import (
-    ClimateEntity,
+from homeassistant.components.climate import ClimateEntity
+from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACMode,
 )
 from homeassistant.components.modbus import (
-    CALL_TYPE_REGISTER_HOLDING,
-    DEFAULT_HUB,
-    ModbusHub,
     get_hub,
 )
-from homeassistant.components.modbus.const import CONF_MAX_TEMP, CONF_MIN_TEMP
+from homeassistant.components.modbus.const import (
+    CALL_TYPE_REGISTER_HOLDING,
+    CALL_TYPE_WRITE_REGISTER,
+    CONF_MAX_TEMP,
+    CONF_MIN_TEMP,
+    DEFAULT_HUB,
+)
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_NAME,
@@ -31,11 +34,11 @@ from homeassistant.const import (
 )
 
 if TYPE_CHECKING:
+    from homeassistant.components.modbus.modbus import ModbusHub
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
     from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
-CALL_TYPE_WRITE_REGISTER = "write_register"
 CONF_HUB = "hub"
 
 PLATFORM_SCHEMA = CLIMATE_PLATFORM_SCHEMA.extend(

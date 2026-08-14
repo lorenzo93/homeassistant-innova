@@ -1,6 +1,6 @@
 {
 	"name": "Modbus Innova",
 	"hide_default_branch": true,
-	"homeassistant": "2024.6.0",
+	"homeassistant": "2026.8.1",
 	"render_readme": true
 }
