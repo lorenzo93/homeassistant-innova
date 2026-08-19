@@ -5,26 +5,18 @@
         "title": "Set up a fancoil",
         "data": {
           "name": "Name",
-          "hub": "Modbus hub",
           "slave": "Slave ID",
           "min_temp": "Minimum temperature",
           "max_temp": "Maximum temperature"
-        },
-        "data_description": {
-          "hub": "Name of the hub configured under the 'modbus' integration in configuration.yaml."
         }
       },
       "reconfigure": {
         "title": "Reconfigure the fancoil",
         "data": {
           "name": "Name",
-          "hub": "Modbus hub",
           "slave": "Slave ID",
           "min_temp": "Minimum temperature",
           "max_temp": "Maximum temperature"
-        },
-        "data_description": {
-          "hub": "Name of the hub configured under the 'modbus' integration in configuration.yaml."
         }
       }
     },

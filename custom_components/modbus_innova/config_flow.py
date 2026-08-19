@@ -26,7 +26,6 @@ def _data_schema() -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(CONF_NAME): str,
-            vol.Required(CONF_HUB, default=DEFAULT_HUB): str,
             vol.Required(CONF_SLAVE): vol.All(
                 NumberSelector(NumberSelectorConfig(min=0, max=254, step=1, mode=NumberSelectorMode.BOX)),
                 vol.Coerce(int),
@@ -69,6 +68,7 @@ class ModbusInnovaConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            user_input[CONF_HUB] = DEFAULT_HUB
             try:
                 get_hub(self.hass, user_input[CONF_HUB])
             except KeyError:
@@ -93,6 +93,7 @@ class ModbusInnovaConfigFlow(ConfigFlow, domain=DOMAIN):
         reconfigure_entry = self._get_reconfigure_entry()
 
         if user_input is not None:
+            user_input[CONF_HUB] = DEFAULT_HUB
             try:
                 get_hub(self.hass, user_input[CONF_HUB])
             except KeyError:
