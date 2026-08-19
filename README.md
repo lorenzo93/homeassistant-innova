@@ -36,6 +36,15 @@ climate:
     min_temp: 5
 ```
 
+1. Optionally, add a sensor to expose the fancoil's water temperature.
+
+```yaml
+sensor:
+  - platform: modbus_innova
+    name: Studio Fancoil
+    slave: 19
+```
+
 ## Contributions are welcome!
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)

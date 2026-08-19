@@ -94,7 +94,6 @@ class InnovaFancoil(ClimateEntity):
         self._slave = modbus_slave
         self._attr_fan_mode = None
         self._alarm = False
-        self._water_temperature: int | None = None
         self._attr_actual_air_speed: int | None = None
 
         self._attr_min_temp = config[CONF_MIN_TEMP]
@@ -112,8 +111,6 @@ class InnovaFancoil(ClimateEntity):
         self._attr_actual_air_speed = await self._async_read_int16_from_register(
             CALL_TYPE_REGISTER_HOLDING, 15
         )
-
-        self._water_temperature = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 1)
 
         prg = await self._async_read_int16_from_register(CALL_TYPE_REGISTER_HOLDING, 201)
 
@@ -162,7 +159,6 @@ class InnovaFancoil(ClimateEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return device specific state attributes."""
         return {
-            "water_temperature": self._water_temperature,
             "fan_speed": self._attr_actual_air_speed,
         }
 
