@@ -12,7 +12,12 @@ from homeassistant.components.modbus.const import (
     DEFAULT_HUB,
 )
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_NAME, CONF_SLAVE
+from homeassistant.const import CONF_NAME, CONF_SLAVE, UnitOfTemperature
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 
 from .const import CONF_HUB, DEFAULT_MAX_TEMP, DEFAULT_MIN_TEMP, DOMAIN
 
@@ -22,9 +27,36 @@ def _data_schema() -> vol.Schema:
         {
             vol.Required(CONF_NAME): str,
             vol.Required(CONF_HUB, default=DEFAULT_HUB): str,
-            vol.Required(CONF_SLAVE): vol.All(int, vol.Range(min=0, max=254)),
-            vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.All(int, vol.Range(min=5, max=40)),
-            vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.All(int, vol.Range(min=5, max=40)),
+            vol.Required(CONF_SLAVE): vol.All(
+                NumberSelector(
+                    NumberSelectorConfig(min=0, max=254, step=1, mode=NumberSelectorMode.BOX)
+                ),
+                vol.Coerce(int),
+            ),
+            vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.All(
+                NumberSelector(
+                    NumberSelectorConfig(
+                        min=5,
+                        max=40,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                        unit_of_measurement=UnitOfTemperature.CELSIUS,
+                    )
+                ),
+                vol.Coerce(int),
+            ),
+            vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.All(
+                NumberSelector(
+                    NumberSelectorConfig(
+                        min=5,
+                        max=40,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                        unit_of_measurement=UnitOfTemperature.CELSIUS,
+                    )
+                ),
+                vol.Coerce(int),
+            ),
         }
     )
 
