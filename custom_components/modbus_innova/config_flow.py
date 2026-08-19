@@ -28,9 +28,7 @@ def _data_schema() -> vol.Schema:
             vol.Required(CONF_NAME): str,
             vol.Required(CONF_HUB, default=DEFAULT_HUB): str,
             vol.Required(CONF_SLAVE): vol.All(
-                NumberSelector(
-                    NumberSelectorConfig(min=0, max=254, step=1, mode=NumberSelectorMode.BOX)
-                ),
+                NumberSelector(NumberSelectorConfig(min=0, max=254, step=1, mode=NumberSelectorMode.BOX)),
                 vol.Coerce(int),
             ),
             vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.All(
