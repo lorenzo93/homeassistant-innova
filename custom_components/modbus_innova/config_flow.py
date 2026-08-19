@@ -23,12 +23,8 @@ def _data_schema() -> vol.Schema:
             vol.Required(CONF_NAME): str,
             vol.Required(CONF_HUB, default=DEFAULT_HUB): str,
             vol.Required(CONF_SLAVE): vol.All(int, vol.Range(min=0, max=254)),
-            vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.All(
-                int, vol.Range(min=5, max=40)
-            ),
-            vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.All(
-                int, vol.Range(min=5, max=40)
-            ),
+            vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.All(int, vol.Range(min=5, max=40)),
+            vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.All(int, vol.Range(min=5, max=40)),
         }
     )
 
@@ -61,9 +57,7 @@ class ModbusInnovaConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_reconfigure(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle reconfiguration of an existing entry."""
         errors: dict[str, str] = {}
         reconfigure_entry = self._get_reconfigure_entry()
