@@ -1,0 +1,46 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up a fancoil",
+        "data": {
+          "name": "Name",
+          "hub": "Modbus hub",
+          "slave": "Slave ID",
+          "min_temp": "Minimum temperature",
+          "max_temp": "Maximum temperature"
+        },
+        "data_description": {
+          "hub": "Name of the hub configured under the 'modbus' integration in configuration.yaml."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure the fancoil",
+        "data": {
+          "name": "Name",
+          "hub": "Modbus hub",
+          "slave": "Slave ID",
+          "min_temp": "Minimum temperature",
+          "max_temp": "Maximum temperature"
+        },
+        "data_description": {
+          "hub": "Name of the hub configured under the 'modbus' integration in configuration.yaml."
+        }
+      }
+    },
+    "error": {
+      "hub_not_found": "Modbus hub not found. Make sure it is configured under the 'modbus' integration in configuration.yaml."
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "water_temperature": {
+        "name": "Water temperature"
+      }
+    }
+  }
+}

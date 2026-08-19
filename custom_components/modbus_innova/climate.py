@@ -5,11 +5,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
-from homeassistant.components.climate import (
-    PLATFORM_SCHEMA as CLIMATE_PLATFORM_SCHEMA,
-)
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     ClimateEntityFeature,
@@ -23,48 +18,34 @@ from homeassistant.components.modbus.const import (
     CALL_TYPE_WRITE_REGISTER,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
-    DEFAULT_HUB,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_NAME,
     CONF_SLAVE,
-    DEVICE_DEFAULT_NAME,
     UnitOfTemperature,
 )
+from homeassistant.helpers.device_registry import DeviceInfo
+
+from .const import CONF_HUB, DOMAIN
 
 if TYPE_CHECKING:
     from homeassistant.components.modbus.modbus import ModbusHub
+    from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
-    from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-
-CONF_HUB = "hub"
-
-PLATFORM_SCHEMA = CLIMATE_PLATFORM_SCHEMA.extend(
-    {
-        vol.Optional(CONF_HUB, default=DEFAULT_HUB): cv.string,
-        vol.Required(CONF_SLAVE): vol.All(int, vol.Range(min=0, max=254)),
-        vol.Optional(CONF_NAME, default=DEVICE_DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_MIN_TEMP, default=5): vol.All(int, vol.Range(min=5, max=40)),
-        vol.Optional(CONF_MAX_TEMP, default=40): vol.All(int, vol.Range(min=5, max=40)),
-    }
-)
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(
+async def async_setup_entry(
     hass: HomeAssistant,
-    config: ConfigType,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,  # noqa: ARG001
 ) -> None:
-    """Set up the Modbus Innova Platform."""
-    modbus_slave = config.get(CONF_SLAVE)
-    name = config.get(CONF_NAME)
-    hub = get_hub(hass, config[CONF_HUB])
-    async_add_entities([InnovaFancoil(hub, modbus_slave, name, config)], update_before_add=True)
+    """Set up the Modbus Innova climate entity from a config entry."""
+    hub = get_hub(hass, entry.data[CONF_HUB])
+    async_add_entities([InnovaFancoil(hub, entry)], update_before_add=True)
 
 
 class InnovaFancoil(ClimateEntity):
@@ -81,23 +62,25 @@ class InnovaFancoil(ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _enable_turn_on_off_backwards_compatibility = False
 
-    def __init__(
-        self,
-        hub: ModbusHub,
-        modbus_slave: int | None,
-        name: str | None,
-        config: dict[str, Any],
-    ) -> None:
+    def __init__(self, hub: ModbusHub, entry: ConfigEntry) -> None:
         """Initialize the unit."""
+        device_id = entry.unique_id or entry.entry_id
         self._hub = hub
-        self._attr_name = name
-        self._slave = modbus_slave
+        self._slave = entry.data[CONF_SLAVE]
+        self._attr_name = None
+        self._attr_has_entity_name = True
+        self._attr_unique_id = f"{device_id}_climate"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, device_id)},
+            name=entry.data[CONF_NAME],
+            manufacturer="Innova",
+        )
         self._attr_fan_mode = None
         self._alarm = False
         self._attr_actual_air_speed: int | None = None
 
-        self._attr_min_temp = config[CONF_MIN_TEMP]
-        self._attr_max_temp = config[CONF_MAX_TEMP]
+        self._attr_min_temp = entry.data[CONF_MIN_TEMP]
+        self._attr_max_temp = entry.data[CONF_MAX_TEMP]
 
     async def async_update(self) -> None:
         """Update unit attributes."""

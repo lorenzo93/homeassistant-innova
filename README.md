@@ -17,33 +17,21 @@ Modbus official documentation available [here](https://www.innovaenergie.com/sit
 1. Restart Home Assistant
 1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Modbus Innova"
 
-## Configuration is done in the configuration.yaml file
+## Configuration
 
-1. Configure the modbus integration with the correct data.
-1. Add a climate device. In the configuration are shown all the possible parameters, but just `platform`, `name` and `slave` are compulsory
+1. Configure the `modbus` integration with the correct data in `configuration.yaml` (this integration still relies on it to talk to the fancoil):
 
 ```yaml
 modbus:
   - name: modbus_hub
     type: tcp
     host: x.y.z.k
-
-climate:
-  - platform: modbus_innova
-    name: Studio Fancoil
-    slave: 19
-    max_temp: 40
-    min_temp: 5
 ```
 
-1. Optionally, add a sensor to expose the fancoil's water temperature.
-
-```yaml
-sensor:
-  - platform: modbus_innova
-    name: Studio Fancoil
-    slave: 19
-```
+1. Restart Home Assistant.
+1. In the HA UI go to "Settings" -> "Devices & Services", click "+ Add Integration" and search for "Modbus Innova".
+1. Fill in the fancoil's name, the Modbus hub name you configured above, the slave id, and optionally the min/max temperature. This creates a climate entity and a water temperature sensor for the fancoil.
+1. Repeat for each fancoil you have. To change a fancoil's settings later, open it under "Devices & Services" and choose "Reconfigure".
 
 ## Contributions are welcome!
 
