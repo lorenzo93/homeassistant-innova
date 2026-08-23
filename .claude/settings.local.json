@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import homeassistant.components.modbus.modbus as m; print\\(m.__file__\\)\")",
+      "Bash(find / -path /proc -prune -o -name \"modbus.py\" -path \"*components/modbus*\" -print)",
+      "Bash(grep -n \"async_pb_call\" -A 40 /home/vscode/.local/lib/python3.14/site-packages/homeassistant/components/modbus/modbus.py | head -80)",
+      "Read(//home/vscode/.local/lib/python3.14/site-packages/homeassistant/components/modbus/**)"
+    ]
+  }
+}

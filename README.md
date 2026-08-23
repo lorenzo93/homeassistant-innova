@@ -2,8 +2,10 @@
 
 Homeassistant integration for the Innova Fancoils.
 Beware that Innova sells its fancoils to other brands, the integration should still work.
+Tested and working on the following boards:
+- INN-FR-B32 
 
-Modbus official documentation available [here](https://www.innovaenergie.com/site/assets/files/2792/n273025c_kit_bridge_modbus_rtu_rev_01_en.pdf).
+Modbus official documentation available [here](docs/Innova-modbus-registries.pdf).
 
 *Rule of thumb*: if the keybord (touchscreen display) is VERY similar to the one in the official documentation, probably the integration should work.
 
