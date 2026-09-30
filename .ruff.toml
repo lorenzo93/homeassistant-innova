@@ -9,7 +9,7 @@ select = [
 ]
 
 ignore = [
-    "ANN101", # Missing type annotation for `self` in method
+    "CPY001", # Missing copyright notice at top of file
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "D203", # no-blank-line-before-class (incompatible with formatter)
     "D212", # multi-line-summary-first-line (incompatible with formatter)
